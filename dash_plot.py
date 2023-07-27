@@ -12,15 +12,18 @@ from config import CLUSTER_TEMPLATE, CLUSTER_OUTPUT_FILENAME_TEMPLATE, \
 
 app = Dash(__name__)
 
-MOLECULE_NAME: str = 'cyp'
-DATA_DIR: Path = Path('data')
+def update_data(data_filename):
+    MOLECULE_NAME: str = data_filename
+    DATA_DIR: Path = Path('data')
 
-cluster_data = np.load(str(Path(DATA_DIR, MOLECULE_NAME, CLUSTER_OUTPUT_FILENAME_TEMPLATE.format(MOLECULE_NAME))))
-position_data = np.load(str(Path(DATA_DIR, MOLECULE_NAME, PARSE_OUTPUT_FILENAME_TEMPLATE.format(MOLECULE_NAME))))
-atom_names = position_data['atom_names']
-position_arr = position_data['arr']
-N_TIME_STEPS = position_arr.shape[1]
+    cluster_data = np.load(str(Path(DATA_DIR, MOLECULE_NAME, CLUSTER_OUTPUT_FILENAME_TEMPLATE.format(MOLECULE_NAME))))
+    position_data = np.load(str(Path(DATA_DIR, MOLECULE_NAME, PARSE_OUTPUT_FILENAME_TEMPLATE.format(MOLECULE_NAME))))
+    atom_names = position_data['atom_names']
+    position_arr = position_data['arr']
+    N_TIME_STEPS = position_arr.shape[1]
+    return cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS
 
+cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data('cyp')
 
 def get_molecule_spec(traj_id, timestep):
     return [{
@@ -33,6 +36,7 @@ def get_molecule_spec(traj_id, timestep):
 
 app.layout = html.Div(id='app-entry', className='flex', children=[
     html.Div(id='left-panel', className='flex column center', children=[
+        dcc.Dropdown(['cyp', 'dbh-parent', 'dbhmeo-7'], 'cyp', id='data-dropdown'),
         html.Div(id='num_neighbors_slider_div', children=[
             html.H4(children='Number of neighbors:'),
             dcc.Slider(id='num_neighbors_slider', className='dcc-slider-cludge', min=UMAP_NN_PARAMS[0], max=UMAP_NN_PARAMS[-1],
@@ -113,15 +117,16 @@ def get_scatter(projection_data, cluster_data):
     )
     return fig
 
-
 @app.callback(
     Output(component_id='projection_scatter', component_property='figure'),
     Input(component_id='num_neighbors_slider', component_property='value'),
     Input(component_id='min_cluster_size_slider', component_property='value'),
     Input(component_id='min_samples_slider', component_property='value'),
-    Input(component_id='epsilon_slider', component_property='value'))
-def update_scatter(n_neighbor, mcs, ms, e):
+    Input(component_id='epsilon_slider', component_property='value'),
+    Input(component_id='data-dropdown', component_property='value'))
+def update_scatter(n_neighbor, mcs, ms, e, data_filename):
     e = '{:.2f}'.format(e)
+    cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data(data_filename)
     return get_scatter(cluster_data[PROJECTION_TEMPLATE.format(n_neighbor)], cluster_data[CLUSTER_TEMPLATE.format(mcs, ms, e)])
 
 
@@ -131,8 +136,12 @@ def update_scatter(n_neighbor, mcs, ms, e):
     Output('projection_tooltip', 'bbox'),
     Output('projection_tooltip', 'children'),
     Input('projection_scatter', 'clickData'),
-    Input(component_id='timestep_slider', component_property='value'))
-def update_molecule(click_data, timestep):
+    Input(component_id='timestep_slider', component_property='value'),
+    Input(component_id='data-dropdown', component_property='value')
+    )
+def update_molecule(click_data, timestep, data_filename):
+    cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data(data_filename)
+
     if click_data is not None:
         pt = click_data['points'][0]
         bbox = pt['bbox']

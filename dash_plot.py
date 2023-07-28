@@ -12,6 +12,7 @@ from config import CLUSTER_TEMPLATE, CLUSTER_OUTPUT_FILENAME_TEMPLATE, \
 
 app = Dash(__name__)
 
+
 def update_data(data_filename):
     MOLECULE_NAME: str = data_filename
     DATA_DIR: Path = Path('data')
@@ -23,7 +24,9 @@ def update_data(data_filename):
     N_TIME_STEPS = position_arr.shape[1]
     return cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS
 
+
 cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data('cyp')
+
 
 def get_molecule_spec(traj_id, timestep):
     return [{
@@ -36,17 +39,10 @@ def get_molecule_spec(traj_id, timestep):
 
 app.layout = html.Div(id='app-entry', className='flex', children=[
     html.Div(id='left-panel', className='flex column center', children=[
-        dcc.Dropdown(['cyp', 'dbh-parent', 'dbhmeo-7'], 'cyp', id='data-dropdown'),
-        html.Div(id='num_neighbors_slider_div', children=[
-            html.H4(children='Number of neighbors:'),
-            dcc.Slider(id='num_neighbors_slider', className='dcc-slider-cludge', min=UMAP_NN_PARAMS[0], max=UMAP_NN_PARAMS[-1],
-                       step=UMAP_NN_PARAM_STEP,
-                       marks={nn: str(nn) for nn in UMAP_NN_PARAMS},
-                       value=UMAP_NN_PARAMS[-1])],
-                 className='slider flex column'),
         html.Div(id='min_cluster_size_div', children=[
             html.H4(children='Min cluster size:'),
-            dcc.Slider(id='min_cluster_size_slider', className='dcc-slider-cludge', min=MIN_CLUSTER_SIZE[0], max=MIN_CLUSTER_SIZE[-1],
+            dcc.Slider(id='min_cluster_size_slider', className='dcc-slider-cludge', min=MIN_CLUSTER_SIZE[0],
+                       max=MIN_CLUSTER_SIZE[-1],
                        step=MIN_CLUSTER_SIZE_STEP,
                        marks={mse: str(mse) for mse in MIN_CLUSTER_SIZE},
                        value=MIN_CLUSTER_SIZE[-1])],
@@ -60,7 +56,8 @@ app.layout = html.Div(id='app-entry', className='flex', children=[
                  className='slider flex column'),
         html.Div(id='epsilon_slider_div', children=[
             html.H4(children='Selection epsilon:'),
-            dcc.Slider(id='epsilon_slider', className='dcc-slider-cludge', min=CLUSTER_SELECTION_EPSILON[0], max=CLUSTER_SELECTION_EPSILON[-1],
+            dcc.Slider(id='epsilon_slider', className='dcc-slider-cludge', min=CLUSTER_SELECTION_EPSILON[0],
+                       max=CLUSTER_SELECTION_EPSILON[-1],
                        step=CLUSTER_SELECTION_EPSILON_STEP,
                        value=CLUSTER_SELECTION_EPSILON[0])],
                  className='slider flex column'),
@@ -90,6 +87,10 @@ app.layout = html.Div(id='app-entry', className='flex', children=[
                  className='slider flex column'),
     ]),
     html.Div(id='right-panel', className='flex column', children=[
+        dcc.Dropdown(['cyp', 'dbh-parent', 'dbhmeo-7'],
+                     'cyp',
+                     id='data-dropdown',
+                     style={'text-align': 'center'}),
         html.Div(id='projection', children=[
             dcc.Graph(
                 id='projection_scatter',
@@ -98,12 +99,22 @@ app.layout = html.Div(id='app-entry', className='flex', children=[
             ),
             dcc.Tooltip(id='projection_tooltip', style={'opacity': .8})
         ]),
+        html.Div(id='num_neighbors_slider_div', children=[
+            html.H4(children='Number of neighbors:'),
+            dcc.Slider(id='num_neighbors_slider', className='dcc-slider-cludge', min=UMAP_NN_PARAMS[0],
+                       max=UMAP_NN_PARAMS[-1],
+                       step=UMAP_NN_PARAM_STEP,
+                       marks={nn: str(nn) for nn in UMAP_NN_PARAMS},
+                       value=UMAP_NN_PARAMS[-1])],
+                 className='slider flex column'),
     ])
 ])
 
 
 def get_scatter(projection_data, cluster_data):
-    fig = px.scatter(title='Product Overview', x=projection_data[:, 0], y=projection_data[:, 1], color=[i for i in cluster_data.astype('str')], custom_data=(list(range(projection_data.shape[0])),))
+    fig = px.scatter(title='Product Overview', x=projection_data[:, 0], y=projection_data[:, 1],
+                     color=[i for i in cluster_data.astype('str')],
+                     custom_data=(list(range(projection_data.shape[0])),))
     fig.update_layout(
         {'title':
              {'font': {'size': 30},
@@ -117,6 +128,7 @@ def get_scatter(projection_data, cluster_data):
     )
     return fig
 
+
 @app.callback(
     Output(component_id='projection_scatter', component_property='figure'),
     Input(component_id='num_neighbors_slider', component_property='value'),
@@ -127,7 +139,8 @@ def get_scatter(projection_data, cluster_data):
 def update_scatter(n_neighbor, mcs, ms, e, data_filename):
     e = '{:.2f}'.format(e)
     cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data(data_filename)
-    return get_scatter(cluster_data[PROJECTION_TEMPLATE.format(n_neighbor)], cluster_data[CLUSTER_TEMPLATE.format(mcs, ms, e)])
+    return get_scatter(cluster_data[PROJECTION_TEMPLATE.format(n_neighbor)],
+                       cluster_data[CLUSTER_TEMPLATE.format(mcs, ms, e)])
 
 
 @app.callback(
@@ -138,7 +151,7 @@ def update_scatter(n_neighbor, mcs, ms, e, data_filename):
     Input('projection_scatter', 'clickData'),
     Input(component_id='timestep_slider', component_property='value'),
     Input(component_id='data-dropdown', component_property='value')
-    )
+)
 def update_molecule(click_data, timestep, data_filename):
     cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data(data_filename)
 
@@ -168,7 +181,6 @@ app.clientside_callback(
     Output('speck', 'style'),
     Input('molecule_viewer', 'style'),
 )
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

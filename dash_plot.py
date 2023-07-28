@@ -28,7 +28,7 @@ def update_data(data_filename):
 cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data('cyp')
 
 
-def get_molecule_spec(traj_id, timestep):
+def get_molecule_spec(atom_names, position_arr, traj_id, timestep):
     return [{
         'symbol': atom,
         'x': coords[0],
@@ -64,7 +64,7 @@ app.layout = html.Div(id='app-entry', className='flex', children=[
         html.Div(id='molecule_viewer', className='flex', children=[
             dashbio.Speck(
                 id='speck',
-                data=get_molecule_spec(0, 0),
+                data=get_molecule_spec(atom_names, position_arr, 0, 0),
                 presetView='stickball',
                 showLegend=True,
                 view={'zoom': 0.05,
@@ -150,8 +150,7 @@ def update_scatter(n_neighbor, mcs, ms, e, data_filename):
     Output('projection_tooltip', 'children'),
     Input('projection_scatter', 'clickData'),
     Input(component_id='timestep_slider', component_property='value'),
-    Input(component_id='data-dropdown', component_property='value')
-)
+    Input(component_id='data-dropdown', component_property='value'))
 def update_molecule(click_data, timestep, data_filename):
     cluster_data, position_data, atom_names, position_arr, N_TIME_STEPS = update_data(data_filename)
 
@@ -167,8 +166,8 @@ def update_molecule(click_data, timestep, data_filename):
                 ], style={'width': '70px', 'white-space': 'normal'})
         ]
 
-        return get_molecule_spec(traj_id, timestep), True, bbox, children
-    return get_molecule_spec(0, timestep), False, None, None
+        return get_molecule_spec(atom_names, position_arr, traj_id, timestep), True, bbox, children
+    return get_molecule_spec(atom_names, position_arr, 0, timestep), False, None, None
 
 
 app.clientside_callback(

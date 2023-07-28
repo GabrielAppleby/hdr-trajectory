@@ -72,7 +72,7 @@ def cluster_impl(filename: str):
     param_to_projection = project_data(arr)
     file_path = Path(filename)
     np.savez(Path(file_path.parent,
-                  CLUSTER_OUTPUT_FILENAME_TEMPLATE.format(''.join(file_path.stem.split('-')[:-1]))),
+                  CLUSTER_OUTPUT_FILENAME_TEMPLATE.format('-'.join(file_path.stem.split('-')[:-1]))),
              **param_to_projection,
              **param_to_cluster)
 

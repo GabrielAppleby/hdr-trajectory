@@ -37,7 +37,7 @@ def convert_impl(filename: str):
     arr = pairwise_atom_dists(arr)
     file_path = Path(filename)
     np.savez(Path(file_path.parent,
-                  CONVERT_OUTPUT_FILENAME_TEMPLATE.format(''.join(file_path.stem.split('-')[:-1]))),
+                  CONVERT_OUTPUT_FILENAME_TEMPLATE.format('-'.join(file_path.stem.split('-')[:-1]))),
              arr=arr,
              atom_names=atoms)
 

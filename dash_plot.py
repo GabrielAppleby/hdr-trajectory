@@ -46,21 +46,21 @@ app.layout = html.Div(id='app-entry', className='flex', children=[
                        step=MIN_CLUSTER_SIZE_STEP,
                        marks={mse: str(mse) for mse in MIN_CLUSTER_SIZE},
                        value=MIN_CLUSTER_SIZE[-1])],
-                 className='slider flex column'),
+                 className='slider-div flex column'),
         html.Div(id='min_samples_div', children=[
             html.H4(children='Min samples:'),
             dcc.Slider(id='min_samples_slider', className='dcc-slider-cludge', min=MIN_SAMPLES[0], max=MIN_SAMPLES[-1],
                        step=MIN_SAMPLES_STEP,
                        marks={ms: str(ms) for ms in MIN_SAMPLES},
                        value=MIN_SAMPLES[-1])],
-                 className='slider flex column'),
+                 className='slider-div flex column'),
         html.Div(id='epsilon_slider_div', children=[
             html.H4(children='Selection epsilon:'),
             dcc.Slider(id='epsilon_slider', className='dcc-slider-cludge', min=CLUSTER_SELECTION_EPSILON[0],
                        max=CLUSTER_SELECTION_EPSILON[-1],
                        step=CLUSTER_SELECTION_EPSILON_STEP,
                        value=CLUSTER_SELECTION_EPSILON[0])],
-                 className='slider flex column'),
+                 className='slider-div flex column'),
         html.Div(id='molecule_viewer', className='flex', children=[
             dashbio.Speck(
                 id='speck',
@@ -84,7 +84,7 @@ app.layout = html.Div(id='app-entry', className='flex', children=[
                        marks=None,
                        tooltip={"placement": "bottom", "always_visible": True},
                        value=N_TIME_STEPS - 1)],
-                 className='slider flex column'),
+                 className='slider-div flex column'),
     ]),
     html.Div(id='right-panel', className='flex column', children=[
         dcc.Dropdown(['cyp', 'dbh-parent', 'dbhmeo-7'],
@@ -106,7 +106,7 @@ app.layout = html.Div(id='app-entry', className='flex', children=[
                        step=UMAP_NN_PARAM_STEP,
                        marks={nn: str(nn) for nn in UMAP_NN_PARAMS},
                        value=UMAP_NN_PARAMS[-1])],
-                 className='slider flex column'),
+                 className='slider-div flex column'),
     ])
 ])
 
